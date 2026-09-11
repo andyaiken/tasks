@@ -32,6 +32,9 @@ targets:
     type: application
     platform: auto
     supportedDestinations: [iOS, macOS]
+    # A saved, shared scheme, so Xcode always archives the app (with its widgets)
+    # rather than picking one of the schemes it would otherwise invent per target.
+    scheme: {}
     sources:
       - path: App
       - path: Shared
