@@ -48,7 +48,7 @@ struct SettingsView: View {
                 Section {
                     Button("Turn on notifications in Settings") { openURL(Self.notificationSettingsURL) }
                 } footer: {
-                    Text("Notifications are turned off for Tasks, so the digest can't be sent.")
+                    Text("Notifications are turned off for Needs Doing, so the digest can't be sent.")
                 }
             }
 
@@ -61,7 +61,7 @@ struct SettingsView: View {
             } header: {
                 Text("iCloud")
             } footer: {
-                Text("Your list is kept in your iCloud account and syncs to Tasks on your other iPhone and Mac.")
+                Text("Your list is kept in your iCloud account and syncs to Needs Doing on your other iPhone and Mac.")
             }
         }
         .formStyle(.grouped)
@@ -104,7 +104,7 @@ struct SettingsView: View {
 
     private var footer: String {
         #if os(macOS)
-        "A morning notification listing your tasks that are due or worse. If you also use Tasks on your iPhone, leave this off here so you get one digest, not two."
+        "A morning notification listing your tasks that are due or worse. If you also use Needs Doing on your iPhone, leave this off here so you get one digest, not two."
         #else
         "A morning notification listing your tasks that are due or worse. Nothing is sent on days when nothing is due."
         #endif

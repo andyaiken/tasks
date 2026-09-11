@@ -192,7 +192,7 @@ CloudKit shared record zones. No backend to write, host, or bring into GDPR scop
 - **Merged automatically.** The first time a device syncs, it downloads what's already in iCloud and uploads whatever it has that iCloud doesn't. The log is a union, so nothing is lost; the same task added separately on two devices shows up twice, and one can be deleted. The first device to sync fixes the list's ID; later devices move their tasks onto it.
 - **Signing out** of iCloud keeps the list on the device as a local list. Signing back in merges again.
 - **A different Apple Account** on the device removes the previous account's list from it. That list is still in the previous account's iCloud.
-- **Deleting Tasks' data from iCloud** (Settings → Apple Account → iCloud) deletes the list from every device, because that's what that setting promises. If the zone disappears for any other reason, devices upload their copies again.
+- **Deleting the app's data from iCloud** (Settings → Apple Account → iCloud) deletes the list from every device, because that's what that setting promises. If the zone disappears for any other reason, devices upload their copies again.
 
 **Local-only mode.** Someone not signed into iCloud still gets a working app with a local list. Signing in later moves that list into a custom zone (§11), rewriting the local ID (§3) on the way. App Review and first-time users will both hit this path, so it is a feature, not a fallback.
 
@@ -301,7 +301,7 @@ Per-task individual reminders stay opt-in, for hard-deadline items. Default to q
 
 Urgency is computed at read time, so there is no scheduler, no background job, and no server-side state. Widgets and a Shortcuts action for "mark X done" are cheap on this stack and disproportionately improve daily use.
 
-**On the Mac.** Settings live in the standard Tasks → Settings… window (⌘,) rather than behind a gear button, and File → New Task (⌘N) replaces File → New Window, since there's only one list. Closing the window quits the app; the digest still arrives because it's booked with the system in advance, and sync catches up at next launch. The iPhone keeps the gear button.
+**On the Mac.** Settings live in the standard Needs Doing → Settings… window (⌘,) rather than behind a gear button, and File → New Task (⌘N) replaces File → New Window, since there's only one list. Closing the window quits the app; the digest still arrives because it's booked with the system in advance, and sync catches up at next launch. The iPhone keeps the gear button.
 
 **The icon** is the "rhythm ring": five arcs in the band colours going clockwise from grey at 12 o'clock to red, on navy, with a white centre dot. `Tools/make-icon.swift` draws every size into the asset catalog — full-bleed squares for iPhone (plus a darker dark-mode variant, no alpha as the App Store requires) and the standard rounded-square grid for the Mac.
 
@@ -395,6 +395,7 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 - **Participant labels:** Apple Account name (first, else full), else the viewer's contact name (first, else full), else monogram, else "User"; no nickname override (§8).
 - **Participant pictures:** from the viewer's own Contacts if a match has a photo; otherwise none (§8).
 - **Distribution:** public App Store release (§12.5).
+- **Name:** Needs Doing, with the App Store subtitle "Chores that come round again". Checked against the App Store and a web search (no app or mark by that name; the nearest is an unrelated to-do app subtitled "What Needs Doing"). Still to do: a UK IPO trademark search and reserving the name in App Store Connect. Identifiers (bundle ID `com.andyaiken.tasks`, iCloud container, App Group) keep the old working name; users never see them.
 - **Devices:** iPhone and Mac only; no iPad (§2).
 - **Your own devices:** one list in your iCloud, merged automatically when a device first syncs (§7).
 - **Main list grouping:** band headings on solo lists (§5).
