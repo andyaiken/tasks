@@ -339,7 +339,7 @@ Constraints that leak into §3 regardless of route: records in the default zone 
 
 Log entries are saved once and never changed or deleted. Task records merge per field (§7): each device remembers which fields it changed and hasn't had confirmed, and those win when iCloud reports a newer copy.
 
-Before the first App Store release, the schema has to be deployed from the development environment to production in the CloudKit Console.
+**Deployed to production on 11 September 2026**, exactly as in the table above. Development only creates a field when a value is first saved, so `Chore.assigneeID` and `LogEntry.note` — never set in testing — were added by hand in the CloudKit Console before deploying; production never creates fields itself. Any field added later must be added in development and deployed before a release that writes it.
 
 ## 12. Where the effort actually goes
 
