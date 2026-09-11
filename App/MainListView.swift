@@ -5,6 +5,7 @@ import TasksCore
 struct MainListView: View {
     @Environment(Store.self) private var store
     @State private var editor: EditorRequest?
+    @State private var showingSettings = false
 
     var body: some View {
         let list = store.mainList
@@ -34,8 +35,12 @@ struct MainListView: View {
                     editor = EditorRequest(chore: store.newChore(), isNew: true)
                 }
             }
+            ToolbarItem(placement: .navigation) {
+                Button("Settings", systemImage: "gearshape") { showingSettings = true }
+            }
         }
         .sheet(item: $editor) { TaskEditor(chore: $0.chore, isNew: $0.isNew) }
+        .sheet(isPresented: $showingSettings) { SettingsView() }
         .undoBanner()
     }
 

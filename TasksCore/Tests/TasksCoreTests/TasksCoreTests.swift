@@ -311,6 +311,27 @@ private func nextDue(_ chore: Chore, _ log: [LogEntry] = [], on today: String) -
         #expect(digest.summary == "2 tasks for you today, 1 overdue.")
     }
 
+    @Test func digestBodyNamesTheMostUrgent() throws {
+        func body(_ titles: [String]) throws -> String {
+            let chores = titles.enumerated().map { i, title in
+                // All at least a week old, so all Due or worse; earlier titles are staler, so they come first.
+                task(title, assignee: nil, created: d("2026-08-20").adding(days: i).description)
+            }
+            return try #require(Digest(list: MainList(chores: chores, log: [], today: today, me: me, participants: []))).body
+        }
+        #expect(try body(["A"]) == "A")
+        #expect(try body(["A", "B"]) == "A and B")
+        #expect(try body(["A", "B", "C"]) == "A, B and C")
+        #expect(try body(["A", "B", "C", "D", "E"]) == "A, B and 3 more")
+    }
+
+    @Test func upcomingDigestsSkipQuietDays() {
+        // Weekly, created 09-01: Due from 09-08, and nothing logged, so due every day after.
+        let upcoming = Digest.upcoming(chores: [task("A", assignee: nil)], log: [], me: me, participants: [], from: d("2026-09-01"), days: 14)
+        #expect(upcoming.map(\.day) == (7..<14).map { d("2026-09-01").adding(days: $0) })
+        #expect(upcoming.first?.digest.summary == "1 task for you today.")
+    }
+
     @Test func noDigestWhenNothingIsYours() {
         let shared = MainList(chores: [task("A", assignee: nil)], log: [], today: today, me: me, participants: [me, "priya"])
         #expect(Digest(list: shared) == nil)

@@ -21,7 +21,13 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { store.now = .now }
+            if phase == .active {
+                store.now = .now
+                DigestScheduler.shared.reschedule(store)
+            }
+        }
+        .onChange(of: store.revision, initial: true) {
+            DigestScheduler.shared.reschedule(store)
         }
     }
 }

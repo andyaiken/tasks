@@ -10,9 +10,11 @@
 		0E53CD4B7435405FD7523C26 /* UndoBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752B15014C7E0FAC670C12B8 /* UndoBanner.swift */; };
 		1380DD9872885B4D29AF060C /* MainListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2400A296FE20171D3321C936 /* MainListView.swift */; };
 		25726A5936AC2685F985BD5B /* TasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2AD40EC72FA56FD59C9EDDD4 /* TasksCore */; };
+		3E311880846E5F7EF6235660 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D410D62EF078F2101F0E39C /* SettingsView.swift */; };
 		45F492BFDED1E7B649842550 /* TasksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B89EFFC4229302A641762F9 /* TasksApp.swift */; };
 		4AA3085EF0001164CC96F13B /* AllTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA7BFD37EEAC43F1313035 /* AllTasksView.swift */; };
 		6F8A282656609F4552C3A3B6 /* TaskEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */; };
+		97922634FC60054E5674CA68 /* DigestScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C2BC1A6E873A1B8D2ACAFAE /* DigestScheduler.swift */; };
 		D29703CAF765DB0B7BEB8F5D /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357099C9D090CE92AE7522C7 /* Formatting.swift */; };
 		D84EC4E357CA6A3A824D4734 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96E7D23788DCA1BBF8C4469 /* ContentView.swift */; };
 		F7084F7AF2E52CECA8A61C1A /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD570CDA704036C1A129D36C /* Store.swift */; };
@@ -24,6 +26,8 @@
 		2400A296FE20171D3321C936 /* MainListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainListView.swift; sourceTree = "<group>"; };
 		357099C9D090CE92AE7522C7 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		6B89EFFC4229302A641762F9 /* TasksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksApp.swift; sourceTree = "<group>"; };
+		6C2BC1A6E873A1B8D2ACAFAE /* DigestScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigestScheduler.swift; sourceTree = "<group>"; };
+		6D410D62EF078F2101F0E39C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		752B15014C7E0FAC670C12B8 /* UndoBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoBanner.swift; sourceTree = "<group>"; };
 		A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditor.swift; sourceTree = "<group>"; };
 		B96E7D23788DCA1BBF8C4469 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -48,8 +52,10 @@
 			children = (
 				11BA7BFD37EEAC43F1313035 /* AllTasksView.swift */,
 				B96E7D23788DCA1BBF8C4469 /* ContentView.swift */,
+				6C2BC1A6E873A1B8D2ACAFAE /* DigestScheduler.swift */,
 				357099C9D090CE92AE7522C7 /* Formatting.swift */,
 				2400A296FE20171D3321C936 /* MainListView.swift */,
+				6D410D62EF078F2101F0E39C /* SettingsView.swift */,
 				FD570CDA704036C1A129D36C /* Store.swift */,
 				A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */,
 				6B89EFFC4229302A641762F9 /* TasksApp.swift */,
@@ -149,8 +155,10 @@
 			files = (
 				4AA3085EF0001164CC96F13B /* AllTasksView.swift in Sources */,
 				D84EC4E357CA6A3A824D4734 /* ContentView.swift in Sources */,
+				97922634FC60054E5674CA68 /* DigestScheduler.swift in Sources */,
 				D29703CAF765DB0B7BEB8F5D /* Formatting.swift in Sources */,
 				1380DD9872885B4D29AF060C /* MainListView.swift in Sources */,
+				3E311880846E5F7EF6235660 /* SettingsView.swift in Sources */,
 				F7084F7AF2E52CECA8A61C1A /* Store.swift in Sources */,
 				6F8A282656609F4552C3A3B6 /* TaskEditor.swift in Sources */,
 				45F492BFDED1E7B649842550 /* TasksApp.swift in Sources */,

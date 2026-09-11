@@ -15,6 +15,9 @@ final class Store {
     /// Refreshed every minute and whenever the app comes to the front, so "today" rolls over at 04:00.
     var now = Date()
 
+    /// Goes up with every saved change, so observers (the digest) know to re-plan.
+    private(set) var revision = 0
+
     /// The most recent action, offered for undo in a banner.
     private(set) var undo: UndoOffer?
 
@@ -125,6 +128,7 @@ final class Store {
     }
 
     private func persist() {
+        revision += 1
         let snapshot = Snapshot(me: me, listID: listID, chores: chores, log: log)
         do {
             let url = Store.fileURL

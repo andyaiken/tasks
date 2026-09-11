@@ -263,7 +263,8 @@ Two mechanisms, and they are not the same thing:
 
 - **Your own tasks only, Due or worse.** The digest lists tasks assigned to you with staleness ≥ 1.0 (§5); "overdue" counts the Overdue band. Unassigned tasks and other people's tasks never appear in it — they're visible in the app, but four people shouldn't all be told about the same four tasks every morning. On a solo list, unassigned tasks are yours (§8). A person with nothing assigned and due gets no digest.
 - The digest time must be 04:00 or later, so it never describes a day that hasn't started (§4).
-- **Schedule days ahead.** Urgency depends only on the date and synced data, so with no new changes the next several days' digests can all be computed now (iOS allows 64 pending local notifications). A sync then corrects upcoming digests rather than creating them, so a missed background refresh means a slightly stale digest, not a missing one.
+- **Schedule days ahead.** Urgency depends only on the date and synced data, so with no new changes the next 14 days' digests can all be computed now (iOS allows 64 pending local notifications). Settings shows the next few, so the user can see what's coming.
+- **Shown even when the app is open** at digest time. A sync then corrects upcoming digests rather than creating them, so a missed background refresh means a slightly stale digest, not a missing one.
 - **Re-compute on every sync**, driven by a background refresh task plus a silent CloudKit push on record change, to pick up changes like a task assigned at 07:00.
 - **One digest device per person.** Someone with an iPhone and a Mac should get one digest, not two. Default to the phone; the Mac's digest is off unless turned on, and a Mac-only user is offered it during setup.
 
