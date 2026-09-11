@@ -4,6 +4,8 @@ import TasksCore
 struct ContentView: View {
     @Environment(Store.self) private var store
     @Environment(\.scenePhase) private var scenePhase
+    /// A new task started from the menu bar (⌘N) rather than a + button.
+    @State private var menuEditor: EditorRequest?
 
     var body: some View {
         TabView {
@@ -14,6 +16,10 @@ struct ContentView: View {
                 NavigationStack { AllTasksView() }
             }
         }
+        .focusedSceneValue(\.newTask) {
+            menuEditor = EditorRequest(chore: store.newChore(), isNew: true)
+        }
+        .sheet(item: $menuEditor) { TaskEditor(chore: $0.chore, isNew: $0.isNew) }
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))

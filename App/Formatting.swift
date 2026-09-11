@@ -1,18 +1,6 @@
 import SwiftUI
 import TasksCore
 
-extension Band {
-    var color: Color {
-        switch self {
-        case .notYet: .gray
-        case .dueSoon: .blue
-        case .due: Color(red: 0.90, green: 0.70, blue: 0.0) // amber
-        case .late: .orange
-        case .overdue: .red
-        }
-    }
-}
-
 extension CalendarDay {
     /// Midday on this day in the current time zone, for date pickers and formatting.
     var date: Date {

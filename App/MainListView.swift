@@ -5,16 +5,25 @@ import TasksCore
 struct MainListView: View {
     @Environment(Store.self) private var store
     @State private var editor: EditorRequest?
+    #if os(iOS)
     @State private var showingSettings = false
+    #endif
 
     var body: some View {
         let list = store.mainList
         List {
             if list.isSolo {
-                rows(list.yours)
+                ForEach(MainList.grouped(list.yours)) { group in
+                    Section {
+                        rows(group.items, showsBand: false)
+                    } header: {
+                        Text(group.band.name)
+                            .foregroundStyle(group.band.color)
+                    }
+                }
             } else {
-                Section("Yours") { rows(list.yours) }
-                Section("Everyone else's") { rows(list.everyoneElse) }
+                Section("Yours") { rows(list.yours, showsBand: true) }
+                Section("Everyone else's") { rows(list.everyoneElse, showsBand: true) }
             }
         }
         .overlay {
@@ -35,18 +44,23 @@ struct MainListView: View {
                     editor = EditorRequest(chore: store.newChore(), isNew: true)
                 }
             }
+            #if os(iOS)
+            // On the Mac, settings are in Tasks → Settings… instead.
             ToolbarItem(placement: .navigation) {
                 Button("Settings", systemImage: "gearshape") { showingSettings = true }
             }
+            #endif
         }
         .sheet(item: $editor) { TaskEditor(chore: $0.chore, isNew: $0.isNew) }
+        #if os(iOS)
         .sheet(isPresented: $showingSettings) { SettingsView() }
+        #endif
         .undoBanner()
     }
 
-    private func rows(_ items: [MainListItem]) -> some View {
+    private func rows(_ items: [MainListItem], showsBand: Bool) -> some View {
         ForEach(items, id: \.chore.id) { item in
-            DueRow(item: item) { editor = EditorRequest(chore: item.chore, isNew: false) }
+            DueRow(item: item, showsBand: showsBand) { editor = EditorRequest(chore: item.chore, isNew: false) }
         }
     }
 }
@@ -54,6 +68,8 @@ struct MainListView: View {
 private struct DueRow: View {
     @Environment(Store.self) private var store
     let item: MainListItem
+    /// Off when the row sits under its band's heading.
+    let showsBand: Bool
     let edit: () -> Void
 
     var body: some View {
@@ -77,9 +93,11 @@ private struct DueRow: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(item.band.name)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(item.band.color)
+                    if showsBand {
+                        Text(item.band.name)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(item.band.color)
+                    }
                 }
                 .contentShape(.rect)
             }

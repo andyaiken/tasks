@@ -26,6 +26,13 @@ extension Chore {
     }
 }
 
+/// The tasks under one band heading on the main list.
+public struct BandGroup: Hashable, Sendable, Identifiable {
+    public let band: Band
+    public let items: [MainListItem]
+    public var id: Band { band }
+}
+
 /// The main screen (§5, §8): your tasks first, then everyone else's, each in urgency order.
 public struct MainList: Hashable, Sendable {
     public let yours: [MainListItem]
@@ -72,6 +79,15 @@ public struct MainList: Hashable, Sendable {
         self.yours = yours.sorted(by: MainList.urgencyOrder)
         self.everyoneElse = everyoneElse.sorted(by: MainList.urgencyOrder)
         self.isSolo = isSolo
+    }
+
+    /// Items under their band headings, most urgent band first; empty bands are left out (§5).
+    /// Items keep their urgency order within each band.
+    public static func grouped(_ items: [MainListItem]) -> [BandGroup] {
+        let groups = Dictionary(grouping: items, by: \.band)
+        return Band.allCases.reversed().compactMap { band in
+            groups[band].map { BandGroup(band: band, items: $0) }
+        }
     }
 
     static func urgencyOrder(_ a: MainListItem, _ b: MainListItem) -> Bool {

@@ -1,16 +1,17 @@
 import Foundation
 import Observation
 import TasksCore
+import WidgetKit
 
-/// The local-only store (SPEC §7, §11): everything is held in memory and saved
-/// as one JSON file after every change.
+/// The on-device store: everything is held in memory and saved as one JSON file
+/// after every change. `CloudSync` keeps it in step with iCloud (SPEC §7, §11).
 @Observable
 final class Store {
     private(set) var chores: [Chore]
     private(set) var log: [LogEntry]
-    /// The local user ID (§3), replaced by the iCloud user record ID when sharing arrives.
-    let me: UserID
-    let listID: UUID
+    /// A local user ID (§3) until the list moves to iCloud, then the iCloud user record ID.
+    private(set) var me: UserID
+    private(set) var listID: UUID
 
     /// Refreshed every minute and whenever the app comes to the front, so "today" rolls over at 04:00.
     var now = Date()
@@ -20,6 +21,11 @@ final class Store {
 
     /// The most recent action, offered for undo in a banner.
     private(set) var undo: UndoOffer?
+
+    /// Called after a change made on this device, so sync can upload it.
+    /// Not called for changes that arrived from iCloud.
+    @ObservationIgnored var onChoreSaved: ((_ new: Chore, _ old: Chore?) -> Void)?
+    @ObservationIgnored var onEntryAppended: ((LogEntry) -> Void)?
 
     struct UndoOffer: Identifiable, Equatable {
         let id = UUID()
@@ -32,6 +38,10 @@ final class Store {
     var mainList: MainList {
         // No sharing yet, so the list is always solo (§8).
         MainList(chores: chores, log: log, today: today, me: me, participants: [])
+    }
+
+    func chore(id: UUID) -> Chore? {
+        chores.first { $0.id == id }
     }
 
     func state(of chore: Chore) -> ChoreState {
@@ -51,21 +61,20 @@ final class Store {
         Chore(title: "", createdOn: today, interval: nil, listID: listID)
     }
 
-    // MARK: Changes
+    // MARK: Changes on this device
 
     func save(_ chore: Chore) {
-        if let index = chores.firstIndex(where: { $0.id == chore.id }) {
-            chores[index] = chore
-        } else {
-            chores.append(chore)
-        }
+        let old = self.chore(id: chore.id)
+        upsert(chore)
         persist()
+        onChoreSaved?(chore, old)
     }
 
     func record(_ kind: LogEntry.Kind, _ chore: Chore) {
         let entry = LogEntry.record(kind, for: chore.id, by: me)
         log.append(entry)
         persist()
+        onEntryAppended?(entry)
         let verb = switch kind {
         case .done: "Done"
         case .skipped: "Skipped"
@@ -78,9 +87,11 @@ final class Store {
     }
 
     func retract(_ entry: LogEntry) {
-        log.append(.record(.retracted, for: entry.choreID, by: me, retracts: entry.id))
+        let retraction = LogEntry.record(.retracted, for: entry.choreID, by: me, retracts: entry.id)
+        log.append(retraction)
         undo = nil
         persist()
+        onEntryAppended?(retraction)
     }
 
     func undoLast() {
@@ -92,31 +103,88 @@ final class Store {
         if undo?.id == id { undo = nil }
     }
 
-    // MARK: Persistence
+    // MARK: Changes from iCloud
 
-    private struct Snapshot: Codable {
-        var version = 1
-        var me: UserID
-        var listID: UUID
-        var chores: [Chore]
-        var log: [LogEntry]
+    /// Adds or replaces tasks and adds log entries that arrived from iCloud.
+    func applyRemote(chores remote: [Chore], entries: [LogEntry]) {
+        guard !remote.isEmpty || !entries.isEmpty else { return }
+        remote.forEach(upsert)
+        var known = Set(log.map(\.id))
+        for entry in entries where known.insert(entry.id).inserted {
+            log.append(entry)
+        }
+        persist()
     }
 
-    private init(_ snapshot: Snapshot) {
+    /// Switches to the iCloud user ID. A local ID (§3) is rewritten everywhere it was used,
+    /// because nothing outside this device has seen it.
+    func adoptUser(_ user: UserID) {
+        guard user != me else { return }
+        if me.hasPrefix(Store.localUserPrefix) {
+            for index in log.indices where log[index].by == me {
+                log[index].by = user
+            }
+            for index in chores.indices where chores[index].assigneeID == me {
+                chores[index].assigneeID = user
+            }
+        }
+        me = user
+        persist()
+    }
+
+    func setListID(_ id: UUID) {
+        listID = id
+        persist()
+    }
+
+    /// Empties the list: another Apple Account's data, or data the user deleted from iCloud.
+    func removeAll() {
+        chores = []
+        log = []
+        undo = nil
+        persist()
+    }
+
+    private func upsert(_ chore: Chore) {
+        if let index = chores.firstIndex(where: { $0.id == chore.id }) {
+            chores[index] = chore
+        } else {
+            chores.append(chore)
+        }
+    }
+
+    // MARK: Persistence
+
+    private static let localUserPrefix = "local-"
+
+    private init(_ snapshot: StoreSnapshot) {
         me = snapshot.me
         listID = snapshot.listID
         chores = snapshot.chores
         log = snapshot.log
     }
 
-    private static var fileURL: URL {
+    /// Where the list was kept before the widget needed to read it.
+    private static var legacyFileURL: URL {
         URL.applicationSupportDirectory.appending(path: "store.json")
     }
 
+    /// Moves the list into the App Group container the first time this version runs.
+    private static func moveLegacyFile(to url: URL) {
+        let fileManager = FileManager.default
+        guard url != legacyFileURL,
+              !fileManager.fileExists(atPath: url.path),
+              fileManager.fileExists(atPath: legacyFileURL.path)
+        else { return }
+        try? fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? fileManager.moveItem(at: legacyFileURL, to: url)
+    }
+
     static func load() -> Store {
-        let url = fileURL
+        let url = SharedStore.fileURL
+        moveLegacyFile(to: url)
         if let data = try? Data(contentsOf: url) {
-            if let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) {
+            if let snapshot = try? JSONDecoder().decode(StoreSnapshot.self, from: data) {
                 return Store(snapshot)
             }
             // Never overwrite a file we can't read: set it aside so nothing is lost.
@@ -124,18 +192,19 @@ final class Store {
                 .appending(path: "store-unreadable-\(Int(Date().timeIntervalSince1970)).json")
             try? FileManager.default.moveItem(at: url, to: aside)
         }
-        return Store(Snapshot(me: "local-\(UUID().uuidString)", listID: UUID(), chores: [], log: []))
+        return Store(StoreSnapshot(me: localUserPrefix + UUID().uuidString, listID: UUID(), chores: [], log: []))
     }
 
     private func persist() {
         revision += 1
-        let snapshot = Snapshot(me: me, listID: listID, chores: chores, log: log)
+        let snapshot = StoreSnapshot(me: me, listID: listID, chores: chores, log: log)
         do {
-            let url = Store.fileURL
+            let url = SharedStore.fileURL
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             try JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
         } catch {
             print("Couldn't save: \(error)")
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

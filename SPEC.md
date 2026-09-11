@@ -31,10 +31,11 @@ Secondary requirement: my household needs to see the same list, so that a task d
 - An All tasks screen listing every task, due or not, for finding and editing
 - Mark done; next occurrence reschedules automatically
 - Skip an occurrence, pause a task, undo a mistaken tick, delete a task (and undo that)
+- Sync your list across your own iPhone and Mac through iCloud
 - Share a list with other people; completions sync
 - Assign tasks to named people, and give each person their own daily digest
 - A fully usable local-only mode for anyone not signed into iCloud
-- iOS and macOS, shipped publicly on the App Store
+- iPhone and Mac (not iPad), shipped publicly on the App Store
 
 **Out of scope (v1)**
 
@@ -154,7 +155,7 @@ Bands for display. Each range includes its lower bound and excludes its upper on
 | 1.5 up to 2.0 | Late | orange |
 | 2.0 and above | Overdue | red |
 
-The main screen shows tasks with staleness ≥ 0.8, sorted by staleness descending within each section (§8), so colour and order always agree. Paused, deleted and completed tasks never appear. No date columns, no calendar.
+The main screen shows tasks with staleness ≥ 0.8, sorted by staleness descending within each section (§8), so colour and order always agree. On a solo list the tasks sit under band headings — Overdue, Late, Due, Due soon — in that order, and empty bands are left out; the heading replaces a per-row band label. Paused, deleted and completed tasks never appear. No date columns, no calendar.
 
 ## 6. The overdue question
 
@@ -185,6 +186,13 @@ CloudKit shared record zones. No backend to write, host, or bring into GDPR scop
 - Conflict handling falls out of §3: union on the log, and last-writer-wins on task metadata, *per field*. If one person renames a task while another reassigns it, both changes survive.
 
 **The owner is a single point of failure.** The shared zone lives in the owner's private database, and CloudKit cannot transfer ownership. If the owner stops sharing, deletes the app's data, or leaves iCloud, everyone else loses the list. Provide an export *and an import*: importing creates a new list owned by the importer, who can then share it. User record IDs are the same for everyone in the app's container, so an imported log keeps who did what. Say plainly in the UI who owns the list.
+
+**Your own devices.** The list lives in a custom zone (`List`) in your private iCloud database, so every iPhone and Mac signed into your Apple Account shows the same list. Changes sync through CKSyncEngine, which is told about other devices' changes by silent push.
+
+- **Merged automatically.** The first time a device syncs, it downloads what's already in iCloud and uploads whatever it has that iCloud doesn't. The log is a union, so nothing is lost; the same task added separately on two devices shows up twice, and one can be deleted. The first device to sync fixes the list's ID; later devices move their tasks onto it.
+- **Signing out** of iCloud keeps the list on the device as a local list. Signing back in merges again.
+- **A different Apple Account** on the device removes the previous account's list from it. That list is still in the previous account's iCloud.
+- **Deleting Tasks' data from iCloud** (Settings → Apple Account → iCloud) deletes the list from every device, because that's what that setting promises. If the zone disappears for any other reason, devices upload their copies again.
 
 **Local-only mode.** Someone not signed into iCloud still gets a working app with a local list. Signing in later moves that list into a custom zone (§11), rewriting the local ID (§3) on the way. App Review and first-time users will both hit this path, so it is a feature, not a fallback.
 
@@ -293,6 +301,12 @@ Per-task individual reminders stay opt-in, for hard-deadline items. Default to q
 
 Urgency is computed at read time, so there is no scheduler, no background job, and no server-side state. Widgets and a Shortcuts action for "mark X done" are cheap on this stack and disproportionately improve daily use.
 
+**On the Mac.** Settings live in the standard Tasks → Settings… window (⌘,) rather than behind a gear button, and File → New Task (⌘N) replaces File → New Window, since there's only one list. Closing the window quits the app; the digest still arrives because it's booked with the system in advance, and sync catches up at next launch. The iPhone keeps the gear button.
+
+**The icon** is the "rhythm ring": five arcs in the band colours going clockwise from grey at 12 o'clock to red, on navy, with a white centre dot. `Tools/make-icon.swift` draws every size into the asset catalog — full-bleed squares for iPhone (plus a darker dark-mode variant, no alpha as the App Store requires) and the standard rounded-square grid for the Mac.
+
+**The widgets.** A To do widget in small, medium and large sizes (iPhone home screen and Mac desktop) and a Lock Screen size (iPhone), showing the main list most urgent first with band colours. A Next up widget shows just the top of the main list — the one thing to do next — with its band, in a small size (iPhone and Mac) and two Lock Screen sizes (iPhone), including a single line above the clock. Tapping either opens the app. The list file lives in the App Group container (`group.com.andyaiken.tasks`) so the widget can read it; the app moves an older file there on first launch and asks the widget to refresh after every change. Urgency only changes at 04:00, so each timeline plans a week of days ahead. The widgets are read-only, and tapping one opens the app — decided. (Ticking from the widget was considered: a tick made there runs in the widget's process, which can't run sync, so it would need the app to pick up and upload such ticks later. Not worth it while a tap gets to the app.)
+
 Keep the domain logic (scheduling, urgency, log interpretation, labels) free of CloudKit types, in its own Swift package (`TasksCore`). It's the easiest part to test in isolation, and the part with the most edge cases (§12.2).
 
 **Persistence: CKSyncEngine over a plain local store.** SwiftData's CloudKit integration covers the private database only. NSPersistentCloudKitContainer supports the shared database but still leaves sharing to CKShare and the CloudKit operations API directly. The routes considered:
@@ -308,6 +322,24 @@ The local store is plain files: the data is small (tens of tasks, a few thousand
 Constraints that leak into §3 regardless of route: records in the default zone cannot be shared — the list must live in a custom zone from day one. Retrofitting a zone later means migrating everyone's data.
 
 **Schema changes are asymmetric.** Fields can be added to a deployed production schema, but their types can't be changed. Deferring a field costs almost nothing; getting a type wrong is permanent. That's why calendar dates are strings (§3).
+
+**The schema.** Container `iCloud.com.andyaiken.tasks`, zone `List`. Record names are `chore.<UUID>`, `entry.<UUID>` and `list`, so a record's kind is clear from its ID alone; record kinds a version doesn't recognise are ignored, so later versions can add new ones.
+
+| Record type | Field | Type |
+|---|---|---|
+| Chore | title, notes | String |
+| | createdOn, anchorDate | String (`YYYY-MM-DD`) |
+| | intervalCount | Int64 (0 for a one-off) |
+| | intervalUnit, anchorMode, backlogPolicy | String |
+| | someday | Int64 (0 / 1) |
+| | assigneeID, listID | String |
+| LogEntry | choreID, kind, day, by, retracts, note | String (`day` is `YYYY-MM-DD`) |
+| | at | Date/Time |
+| List | listID | String |
+
+Log entries are saved once and never changed or deleted. Task records merge per field (§7): each device remembers which fields it changed and hasn't had confirmed, and those win when iCloud reports a newer copy.
+
+Before the first App Store release, the schema has to be deployed from the development environment to production in the CloudKit Console.
 
 ## 12. Where the effort actually goes
 
@@ -339,13 +371,14 @@ Decided: a public release rather than quarterly TestFlight re-uploads. Developer
 - **Local-only mode must stand on its own (§7).** Reviewers and strangers will open the app without iCloud; the solo list (§8) is what they'll see.
 - **Privacy labels** should be close to "no data collected", as long as there is no backend of mine and no analytics. Reading Contacts (§8) doesn't change that, provided contact data never leaves the device. The participant directory (§8) lives in the users' own iCloud, so it doesn't either. A v2 backend (§9) would, and brings GDPR back into scope.
 - **Contacts purpose string.** App Review checks that the permission prompt explains why the app wants Contacts.
-- Screenshots, a support URL, and a privacy policy URL.
+- Screenshots, a support URL, and a privacy policy URL. The pages are in `docs/` for GitHub Pages: `https://andyaiken.github.io/tasks/support.html` and `…/privacy.html`, with andy.aiken@live.co.uk as the contact. The privacy policy must be updated before sharing ships, because sharing reads Contacts (§8).
 
 None of this is hard in the sense of requiring cleverness. It's hard in the sense of being numerous, undocumented, and only discoverable by hitting it.
 
 ## 13. Open decisions
 
-- **What happens when a second list would appear.** Three ways it can happen: accepting a household share while you already have your own tasks; signing into iCloud when your iCloud already holds a list (a reinstall, or a second device used first); and importing an export (§7). Records can't move between databases, so keeping one list means copying tasks and their logs. *Recommendation:* a person has exactly one list at a time. Whenever a second would appear, offer to copy the tasks (with their history) from the list being left into the one being kept, then remove the old one.
+- **What happens when a second list would appear** from someone else: accepting a household share while you already have your own tasks, or importing an export (§7). Records can't move between databases, so keeping one list means copying tasks and their logs. *Recommendation:* a person has exactly one list at a time. Whenever a second would appear, offer to copy the tasks (with their history) from the list being left into the one being kept, then remove the old one. (Your own devices merge automatically — decided, §7.)
+- **Band headings on a shared list (§5, §8).** Solo lists group by band. Once there are Yours / Everyone else's sections, either band headings go inside each section, or bands become the sections and each row shows its assignee.
 - **Result of the contact-matching prototype (§12.3)** — decides whether the participant directory (§8) is needed.
 - **Subscriptions on the shared database (§9)** — confirm against current docs that only database subscriptions are supported.
 
@@ -362,4 +395,7 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 - **Participant labels:** Apple Account name (first, else full), else the viewer's contact name (first, else full), else monogram, else "User"; no nickname override (§8).
 - **Participant pictures:** from the viewer's own Contacts if a match has a photo; otherwise none (§8).
 - **Distribution:** public App Store release (§12.5).
+- **Devices:** iPhone and Mac only; no iPad (§2).
+- **Your own devices:** one list in your iCloud, merged automatically when a device first syncs (§7).
+- **Main list grouping:** band headings on solo lists (§5).
 - **Persistence:** CKSyncEngine over plain local files; iOS 18 / macOS 15 minimum (§11).

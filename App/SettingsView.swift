@@ -2,8 +2,11 @@ import SwiftUI
 import UserNotifications
 import TasksCore
 
+/// Settings: a sheet from the gear button on iPhone, and the standard
+/// Tasks → Settings… window (⌘,) on the Mac.
 struct SettingsView: View {
     @Environment(Store.self) private var store
+    @Environment(CloudSync.self) private var sync
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -12,51 +15,65 @@ struct SettingsView: View {
     @State private var status: UNAuthorizationStatus?
 
     var body: some View {
+        #if os(macOS)
+        form
+            .frame(width: 480, height: 600)
+        #else
         NavigationStack {
-            Form {
-                Section {
-                    Toggle("Daily digest", isOn: $enabled)
-                    if enabled {
-                        DatePicker("Time", selection: time, in: timeRange, displayedComponents: .hourAndMinute)
-                    }
-                } header: {
-                    Text("Notifications")
-                } footer: {
-                    Text(footer)
-                }
-
-                if enabled && status == .denied {
-                    Section {
-                        Button("Turn on notifications in Settings") { openURL(Self.notificationSettingsURL) }
-                    } footer: {
-                        Text("Notifications are turned off for Tasks, so the digest can't be sent.")
+            form
+                .navigationTitle("Settings")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
                     }
                 }
+        }
+        #endif
+    }
 
+    private var form: some View {
+        Form {
+            Section {
+                Toggle("Daily digest", isOn: $enabled)
                 if enabled {
-                    comingUp
+                    DatePicker("Time", selection: time, in: timeRange, displayedComponents: .hourAndMinute)
+                }
+            } header: {
+                Text("Notifications")
+            } footer: {
+                Text(footer)
+            }
+
+            if enabled && status == .denied {
+                Section {
+                    Button("Turn on notifications in Settings") { openURL(Self.notificationSettingsURL) }
+                } footer: {
+                    Text("Notifications are turned off for Tasks, so the digest can't be sent.")
                 }
             }
-            .formStyle(.grouped)
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+
+            if enabled {
+                comingUp
             }
-            .task(id: enabled) {
-                status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-            }
-            .onChange(of: enabled) { _, isOn in
-                DigestScheduler.shared.reschedule(store, userInitiated: isOn)
-            }
-            .onChange(of: minutes) {
-                DigestScheduler.shared.reschedule(store)
+
+            Section {
+                Text(sync.status)
+            } header: {
+                Text("iCloud")
+            } footer: {
+                Text("Your list is kept in your iCloud account and syncs to Tasks on your other iPhone and Mac.")
             }
         }
-        #if os(macOS)
-        .frame(minWidth: 420, minHeight: 460)
-        #endif
+        .formStyle(.grouped)
+        .task(id: enabled) {
+            status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        }
+        .onChange(of: enabled) { _, isOn in
+            DigestScheduler.shared.reschedule(store, userInitiated: isOn)
+        }
+        .onChange(of: minutes) {
+            DigestScheduler.shared.reschedule(store)
+        }
     }
 
     private var comingUp: some View {

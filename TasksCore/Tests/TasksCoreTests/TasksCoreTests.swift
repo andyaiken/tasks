@@ -282,6 +282,19 @@ private func nextDue(_ chore: Chore, _ log: [LogEntry] = [], on today: String) -
         #expect(result.everyoneElse.last?.assignee == nil)
     }
 
+    @Test func groupedByBandMostUrgentFirst() {
+        let chores = [
+            task("Due", assignee: nil),                          // 1.0
+            task("Overdue", assignee: nil, created: "2026-08-25"), // 2.0
+            task("Soon", assignee: nil, created: "2026-09-02"),   // 6/7
+            task("Also due", assignee: nil, created: "2026-08-31"), // 8/7
+        ]
+        let list = MainList(chores: chores, log: [], today: today, me: me, participants: [])
+        let groups = MainList.grouped(list.yours)
+        #expect(groups.map(\.band) == [.overdue, .due, .dueSoon])
+        #expect(groups[1].items.map(\.chore.title) == ["Also due", "Due"])
+    }
+
     @Test func soloListTreatsEverythingAsYours() {
         let result = MainList(chores: [task("A", assignee: nil), task("B", assignee: "gone")], log: [], today: today, me: me, participants: [])
         #expect(result.isSolo)
