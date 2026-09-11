@@ -1,0 +1,49 @@
+# XcodeGen project definition. After changing this file, regenerate the
+# Xcode project with:  xcodegen generate
+name: Tasks
+
+options:
+  bundleIdPrefix: com.andyaiken
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "15.0"
+
+packages:
+  TasksCore:
+    path: TasksCore
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: 3G846V4G68
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Tasks:
+    type: application
+    platform: auto
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: App
+    dependencies:
+      - package: TasksCore
+    settings:
+      base:
+        PRODUCT_NAME: Tasks
+        PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Tasks
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_PREVIEWS: YES
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
