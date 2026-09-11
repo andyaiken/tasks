@@ -11,9 +11,16 @@ struct TasksApp: App {
     #endif
 
     init() {
+        #if DEBUG
+        // Test builds only: `-screenshots` shows example tasks and leaves iCloud and the real list alone.
+        let screenshots = CommandLine.arguments.contains("-screenshots")
+        let store = screenshots ? Store.demo() : Store.load()
+        #else
+        let screenshots = false
         let store = Store.load()
+        #endif
         _store = State(initialValue: store)
-        _sync = State(initialValue: CloudSync(store: store))
+        _sync = State(initialValue: CloudSync(store: store, enabled: !screenshots))
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
 

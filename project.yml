@@ -58,6 +58,8 @@ targets:
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        # Portrait-only is fine because the app never runs side by side with others.
+        INFOPLIST_KEY_UIRequiresFullScreen: YES
         # No special encryption, so no export-compliance questions on each upload.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         ENABLE_PREVIEWS: YES

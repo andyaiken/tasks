@@ -359,6 +359,8 @@ Sharing cannot be meaningfully tested with one Apple Account. Two accounts, two 
 
 **Prototype contact matching before anything else.** It needs three accounts: an owner and two participants, all invited by email or phone. On each participant's device, check what the share reveals about the other participant — name, email, phone. Two accounts can't show this, because the only other person a participant sees is the owner. If the answer is "nothing", §8's participant directory is the fallback.
 
+**Sync test, 11 September 2026 — passed.** iPhone and Mac on the same Apple Account, development environment. All nine checks passed: first-launch merge, add, tick, undo, delete, a tick made offline, the same task edited on both devices while one was offline (per-field merge kept both edits), a change arriving while the iPhone app was in the background, and catching up after the Mac app had been closed. Two failed at first, for the same reason: the app only fetched when iCloud's silent push arrived, and pushes were sometimes a minute late and aren't delivered to an app that isn't running. The fix is a backstop — the app also fetches on launch, whenever it comes to the front, and once a minute while open. After the fix, a Mac reopened after a change caught up 11 seconds after opening, down from about 80.
+
 ### 12.4 The digest's reliability
 
 §9 depends on background refresh and silent push, both of which iOS grants at its own discretion. The failure mode is silent and intermittent, which is the worst kind to debug. Scheduling digests days ahead limits the damage.
@@ -378,6 +380,7 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 ## 13. Open decisions
 
 - **What happens when a second list would appear** from someone else: accepting a household share while you already have your own tasks, or importing an export (§7). Records can't move between databases, so keeping one list means copying tasks and their logs. *Recommendation:* a person has exactly one list at a time. Whenever a second would appear, offer to copy the tasks (with their history) from the list being left into the one being kept, then remove the old one. (Your own devices merge automatically — decided, §7.)
+- **Getting back to completed one-offs.** Ticking a one-off completes it and it leaves every screen, so after the six-second Undo banner there's no way to find it and undo a mistaken tick. *Recommendation:* a "Recently done" section at the foot of All tasks listing the last couple of weeks' completed one-offs, each with Undo. (Found in the sync test, 11 September 2026.)
 - **Band headings on a shared list (§5, §8).** Solo lists group by band. Once there are Yours / Everyone else's sections, either band headings go inside each section, or bands become the sections and each row shows its assignee.
 - **Result of the contact-matching prototype (§12.3)** — decides whether the participant directory (§8) is needed.
 - **Subscriptions on the shared database (§9)** — confirm against current docs that only database subscriptions are supported.
@@ -395,7 +398,7 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 - **Participant labels:** Apple Account name (first, else full), else the viewer's contact name (first, else full), else monogram, else "User"; no nickname override (§8).
 - **Participant pictures:** from the viewer's own Contacts if a match has a photo; otherwise none (§8).
 - **Distribution:** public App Store release (§12.5).
-- **Name:** Needs Doing, with the App Store subtitle "Chores that come round again". Checked against the App Store and a web search (no app or mark by that name; the nearest is an unrelated to-do app subtitled "What Needs Doing"). Still to do: a UK IPO trademark search and reserving the name in App Store Connect. Identifiers (bundle ID `com.andyaiken.tasks`, iCloud container, App Group) keep the old working name; users never see them.
+- **Name:** Needs Doing, with the App Store subtitle "Chores that come round again". Checked against the App Store and a web search (no app or mark by that name; the nearest is an unrelated to-do app subtitled "What Needs Doing"). UK IPO trademark register searched 11 September 2026: clear. Still to do: reserving the name in App Store Connect. Identifiers (bundle ID `com.andyaiken.tasks`, iCloud container, App Group) keep the old working name; users never see them.
 - **Devices:** iPhone and Mac only; no iPad (§2).
 - **Your own devices:** one list in your iCloud, merged automatically when a device first syncs (§7).
 - **Main list grouping:** band headings on solo lists (§5).

@@ -157,12 +157,32 @@ final class Store {
 
     private static let localUserPrefix = "local-"
 
-    private init(_ snapshot: StoreSnapshot) {
+    /// Where this store saves: the shared App Group file, except for the screenshot store.
+    @ObservationIgnored private let fileURL: URL
+
+    private init(_ snapshot: StoreSnapshot, fileURL: URL = SharedStore.fileURL) {
         me = snapshot.me
         listID = snapshot.listID
         chores = snapshot.chores
         log = snapshot.log
+        self.fileURL = fileURL
     }
+
+    #if DEBUG
+    /// Example tasks for App Store screenshots (launch with `-screenshots`). On a real device it
+    /// saves to a separate file so the user's list is never touched; in the Simulator it uses
+    /// the shared file, so the widgets show the same examples.
+    static func demo() -> Store {
+        #if targetEnvironment(simulator)
+        let url = SharedStore.fileURL
+        #else
+        let url = URL.temporaryDirectory.appending(path: "demo-store.json")
+        #endif
+        let store = Store(DemoData.snapshot(today: CalendarDay(containing: .now, in: .current)), fileURL: url)
+        store.persist()
+        return store
+    }
+    #endif
 
     /// Where the list was kept before the widget needed to read it.
     private static var legacyFileURL: URL {
@@ -199,7 +219,7 @@ final class Store {
         revision += 1
         let snapshot = StoreSnapshot(me: me, listID: listID, chores: chores, log: log)
         do {
-            let url = SharedStore.fileURL
+            let url = fileURL
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             try JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
         } catch {

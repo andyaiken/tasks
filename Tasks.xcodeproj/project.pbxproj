@@ -12,6 +12,7 @@
 		1380DD9872885B4D29AF060C /* MainListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2400A296FE20171D3321C936 /* MainListView.swift */; };
 		1C7A93DBF688D430341381BC /* BandColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3306F7D1266C467256FC421 /* BandColor.swift */; };
 		218D7BEB809A6CFB231F2744 /* CloudRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46B21EC2475DD4CAD71B7C5 /* CloudRecords.swift */; };
+		2454FEF8D9796DD798626078 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF5ADC8C95D61A27FF1E907 /* DemoData.swift */; };
 		25726A5936AC2685F985BD5B /* TasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2AD40EC72FA56FD59C9EDDD4 /* TasksCore */; };
 		3537D4789201D295E0208B73 /* BandColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3306F7D1266C467256FC421 /* BandColor.swift */; };
 		3E311880846E5F7EF6235660 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D410D62EF078F2101F0E39C /* SettingsView.swift */; };
@@ -65,6 +66,7 @@
 		33B3A688FFCA5965D022CE07 /* CloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSync.swift; sourceTree = "<group>"; };
 		357099C9D090CE92AE7522C7 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		39B12E07F00ADDA993472FB6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3FF5ADC8C95D61A27FF1E907 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		6B89EFFC4229302A641762F9 /* TasksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksApp.swift; sourceTree = "<group>"; };
 		6C2BC1A6E873A1B8D2ACAFAE /* DigestScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DigestScheduler.swift; sourceTree = "<group>"; };
 		6D410D62EF078F2101F0E39C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 				11BA7BFD37EEAC43F1313035 /* AllTasksView.swift */,
 				1B54AAFBE49912E2CF111018 /* Assets.xcassets */,
 				B96E7D23788DCA1BBF8C4469 /* ContentView.swift */,
+				3FF5ADC8C95D61A27FF1E907 /* DemoData.swift */,
 				6C2BC1A6E873A1B8D2ACAFAE /* DigestScheduler.swift */,
 				357099C9D090CE92AE7522C7 /* Formatting.swift */,
 				2400A296FE20171D3321C936 /* MainListView.swift */,
@@ -297,6 +300,7 @@
 				218D7BEB809A6CFB231F2744 /* CloudRecords.swift in Sources */,
 				5C3584710408CEE257B99F8B /* CloudSync.swift in Sources */,
 				D84EC4E357CA6A3A824D4734 /* ContentView.swift in Sources */,
+				2454FEF8D9796DD798626078 /* DemoData.swift in Sources */,
 				97922634FC60054E5674CA68 /* DigestScheduler.swift in Sources */,
 				D29703CAF765DB0B7BEB8F5D /* Formatting.swift in Sources */,
 				1380DD9872885B4D29AF060C /* MainListView.swift in Sources */,
@@ -363,6 +367,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -396,6 +401,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

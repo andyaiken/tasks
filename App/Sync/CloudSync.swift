@@ -41,12 +41,20 @@ final class CloudSync {
     @ObservationIgnored private var state: SyncState
     @ObservationIgnored private var engine: CKSyncEngine?
     @ObservationIgnored private var starting = false
+    /// Off for the screenshot store, which must never reach iCloud or touch the real sync state.
+    @ObservationIgnored private let enabled: Bool
 
     private static let onStatus = "On. Your list syncs across your devices."
     private static let offStatus = "Not signed into iCloud, so this list is only on this device."
 
-    init(store: Store) {
+    init(store: Store, enabled: Bool = true) {
         self.store = store
+        self.enabled = enabled
+        guard enabled else {
+            state = SyncState()
+            status = "Off while taking screenshots."
+            return
+        }
         state = Self.loadState()
         store.onChoreSaved = { [weak self] new, old in self?.choreSaved(new, old: old) }
         store.onEntryAppended = { [weak self] entry in self?.entryAppended(entry) }
@@ -56,7 +64,7 @@ final class CloudSync {
 
     /// Starts syncing if iCloud is available. Safe to call again whenever the account may have changed.
     func start() async {
-        guard !starting else { return }
+        guard enabled, !starting else { return }
         starting = true
         defer { starting = false }
 
@@ -87,6 +95,10 @@ final class CloudSync {
             if engine == nil { startEngine() }
             if !state.merged { try await mergeIntoCloud(user: user) }
             status = Self.onStatus
+            // Catch up straight away on launch: pushes sent while the app wasn't running
+            // aren't delivered, and the app starts out active, so the come-to-the-front
+            // check in ContentView doesn't fire until it's been in the background once.
+            await fetchNow()
         } catch {
             logger.error("Couldn't start sync: \(error, privacy: .public)")
             status = "Can't reach iCloud right now. Changes will sync later."
@@ -101,6 +113,18 @@ final class CloudSync {
         case .couldNotDetermine: "could not determine"
         case .temporarilyUnavailable: "temporarily unavailable"
         @unknown default: "unknown (\(status.rawValue))"
+        }
+    }
+
+    /// Checks iCloud for changes now. The silent pushes that normally trigger a fetch are
+    /// delivered at the system's discretion and can be late or dropped (§12.4), so the app
+    /// also calls this when it comes to the front and once a minute while it's open.
+    func fetchNow() async {
+        guard let engine, state.merged else { return }
+        do {
+            try await engine.fetchChanges()
+        } catch {
+            logger.error("Couldn't fetch changes: \(error, privacy: .public)")
         }
     }
 
