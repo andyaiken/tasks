@@ -399,7 +399,7 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 - **Participant pictures:** from the viewer's own Contacts if a match has a photo; otherwise none (§8).
 - **Distribution:** public App Store release (§12.5).
 - **Name:** Needs Doing, with the App Store subtitle "Chores that come round again". Checked against the App Store and a web search (no app or mark by that name; the nearest is an unrelated to-do app subtitled "What Needs Doing"). UK IPO trademark register searched 11 September 2026: clear. Still to do: reserving the name in App Store Connect. Identifiers (bundle ID `com.andyaiken.tasks`, iCloud container, App Group) keep the old working name; users never see them.
-- **Devices:** iPhone and Mac only; no iPad (§2).
+- **Devices:** iPhone and Mac only; no iPad (§2). `TARGETED_DEVICE_FAMILY: "1"` must be set on *each target* in `project.yml`, not in the project-wide `settings.base`: XcodeGen's `supportedDestinations: [iOS, macOS]` writes `TARGETED_DEVICE_FAMILY = "1,2"` at target level, which overrides the base setting. The 1.0 (2) upload shipped with iPad support because of this, and App Store Connect then required 13-inch iPad screenshots; fixed in 1.0 (3). Check `UIDeviceFamily` in the built `Info.plist` after any change to the destinations.
 - **Your own devices:** one list in your iCloud, merged automatically when a device first syncs (§7).
 - **Main list grouping:** band headings on solo lists (§5).
 - **Persistence:** CKSyncEngine over plain local files; iOS 18 / macOS 15 minimum (§11).

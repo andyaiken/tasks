@@ -19,9 +19,7 @@ settings:
     SWIFT_VERSION: "6.0"
     # Must match the version in App Store Connect. Bump the build number for every upload.
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "2"
-    # iPhone only on iOS; no iPad.
-    TARGETED_DEVICE_FAMILY: "1"
+    CURRENT_PROJECT_VERSION: "3"
     SUPPORTS_MACCATALYST: NO
     ENABLE_APP_SANDBOX: YES
     ENABLE_HARDENED_RUNTIME: YES
@@ -51,6 +49,9 @@ targets:
         # The app's name, shown in the Mac menu bar and Finder. Identifiers keep the old "tasks".
         PRODUCT_NAME: Needs Doing
         PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks
+        # iPhone only; no iPad. This must be set per target: supportedDestinations
+        # writes TARGETED_DEVICE_FAMILY = "1,2" on the target, which beats settings.base.
+        TARGETED_DEVICE_FAMILY: "1"
         # Drawn by Tools/make-icon.swift.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: Config/Tasks-iOS.entitlements
@@ -88,6 +89,8 @@ targets:
       base:
         PRODUCT_NAME: TasksWidget
         PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks.widget
+        # Must match the app; see the note on the Tasks target.
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Config/Widget-iOS.entitlements
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": Config/Widget-macOS.entitlements
         GENERATE_INFOPLIST_FILE: YES
