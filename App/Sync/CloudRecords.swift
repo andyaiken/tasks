@@ -17,13 +17,17 @@ enum RecordRef: Equatable {
         }
     }
 
-    var recordID: CKRecord.ID {
-        let name = switch self {
+    var recordName: String {
+        switch self {
         case .chore(let id): "chore.\(id.uuidString)"
         case .entry(let id): "entry.\(id.uuidString)"
         case .list: "list"
         }
-        return CKRecord.ID(recordName: name, zoneID: CloudSync.zoneID)
+    }
+
+    /// The record's ID in a list's zone: the user's own, or a shared one they've joined (§7).
+    func recordID(in zoneID: CKRecordZone.ID) -> CKRecord.ID {
+        CKRecord.ID(recordName: recordName, zoneID: zoneID)
     }
 
     /// `nil` for records this version doesn't know, e.g. from a newer version of the app.

@@ -56,12 +56,14 @@ struct SettingsView: View {
                 comingUp
             }
 
+            SharingSection()
+
             Section {
                 Text(sync.status)
             } header: {
                 Text("iCloud")
             } footer: {
-                Text("Your list is kept in your iCloud account and syncs to Needs Doing on your other iPhone and Mac.")
+                Text("Your list is kept in iCloud and syncs to Needs Doing on your other iPhone and Mac.")
             }
         }
         .formStyle(.grouped)

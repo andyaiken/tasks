@@ -373,3 +373,70 @@ private func nextDue(_ chore: Chore, _ log: [LogEntry] = [], on today: String) -
         #expect(labels == ["a": "Sam K.", "b": "Sam T."])
     }
 }
+
+// MARK: - Participants (§8)
+
+@Suite struct ParticipantLabels {
+    private func person(_ id: String, given: String? = nil, family: String? = nil, email: String? = nil, phone: String? = nil) -> Participant {
+        Participant(id: id, userID: "user-\(id)", givenName: given, familyName: family, email: email, phone: phone, status: .joined)
+    }
+
+    @Test func usesTheFirstName() {
+        let labels = Participant.labels(for: [person("a", given: "Andy", family: "Aiken")])
+        #expect(labels["a"] == "Andy")
+    }
+
+    @Test func fallsBackToTheFullNameWithoutAFirstName() {
+        let labels = Participant.labels(for: [person("a", family: "Aiken")])
+        #expect(labels["a"] == "Aiken")
+    }
+
+    @Test func usesTheViewersContactNameWhenTheAccountHasNone() {
+        let labels = Participant.labels(
+            for: [person("a", email: "sam@example.com")],
+            contactNames: ["a": PersonNameComponents(givenName: "Sam", familyName: "Kay")]
+        )
+        #expect(labels["a"] == "Sam")
+    }
+
+    @Test func prefersTheAccountNameOverTheContactName() {
+        let labels = Participant.labels(
+            for: [person("a", given: "Samantha")],
+            contactNames: ["a": PersonNameComponents(givenName: "Sam")]
+        )
+        #expect(labels["a"] == "Samantha")
+    }
+
+    @Test func monogramFromTheEmailAddress() {
+        let labels = Participant.labels(for: [person("a", email: "sam@example.com")])
+        #expect(labels["a"] == "S")
+    }
+
+    @Test func userWhenThereIsNothingToGoOn() {
+        let labels = Participant.labels(for: [person("a", phone: "+44 7700 900123"), person("b", given: "  ")])
+        #expect(labels["a"] == "User")
+        #expect(labels["b"] == "User")
+    }
+
+    @Test func sameFirstNamesGetAFamilyInitial() {
+        let labels = Participant.labels(
+            for: [person("a", given: "Sam", family: "Kay"), person("b", family: "Tate"), person("c", given: "Jo")],
+            contactNames: ["b": PersonNameComponents(givenName: "sam", familyName: "Tate")]
+        )
+        // b's account has only a family name, so it's "Tate", not a second Sam.
+        #expect(labels["a"] == "Sam")
+        #expect(labels["b"] == "Tate")
+        #expect(labels["c"] == "Jo")
+
+        let twins = Participant.labels(for: [person("a", given: "Sam", family: "Kay"), person("b", given: "Sam", family: "Tate"), person("c", given: "Sam")])
+        #expect(twins["a"] == "Sam K.")
+        #expect(twins["b"] == "Sam T.")
+        #expect(twins["c"] == "Sam") // no family name to add
+    }
+
+    @Test func onlyJoinedParticipantsCanBeAssigned() {
+        let invited = Participant(id: "a", userID: nil, status: .invited)
+        #expect(!invited.isAssignable)
+        #expect(person("b").isAssignable)
+    }
+}

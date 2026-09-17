@@ -23,7 +23,7 @@ struct MainListView: View {
                 }
             } else {
                 Section("Yours") { rows(list.yours, showsBand: true) }
-                Section("Everyone else's") { rows(list.everyoneElse, showsBand: true) }
+                Section("Everyone else's") { rows(list.everyoneElse, showsBand: true, showsAssignee: true) }
             }
         }
         .overlay {
@@ -58,9 +58,12 @@ struct MainListView: View {
         .undoBanner()
     }
 
-    private func rows(_ items: [MainListItem], showsBand: Bool) -> some View {
+    private func rows(_ items: [MainListItem], showsBand: Bool, showsAssignee: Bool = false) -> some View {
         ForEach(items, id: \.chore.id) { item in
-            DueRow(item: item, showsBand: showsBand) { editor = EditorRequest(chore: item.chore, isNew: false) }
+            let assignee = showsAssignee ? (item.assignee.flatMap(store.label(for:)) ?? "Anyone") : nil
+            DueRow(item: item, showsBand: showsBand, assignee: assignee) {
+                editor = EditorRequest(chore: item.chore, isNew: false)
+            }
         }
     }
 }
@@ -70,6 +73,8 @@ private struct DueRow: View {
     let item: MainListItem
     /// Off when the row sits under its band's heading.
     let showsBand: Bool
+    /// Whose task it is, under Everyone else's (§8).
+    let assignee: String?
     let edit: () -> Void
 
     var body: some View {
@@ -88,7 +93,7 @@ private struct DueRow: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.chore.title)
-                        Text(item.chore.rhythmDescription)
+                        Text([item.chore.rhythmDescription, assignee].compactMap(\.self).joined(separator: " · "))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

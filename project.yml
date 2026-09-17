@@ -41,6 +41,10 @@ targets:
       properties:
         # CloudKit tells the app about changes from other devices with silent pushes.
         UIBackgroundModes: [remote-notification]
+        # Lets iOS and macOS hand the app a list someone has shared (§7).
+        CKSharingSupported: true
+        # Read by SharedStore, so test builds use their own container.
+        AppGroup: $(APP_GROUP)
     dependencies:
       - package: TasksCore
       - target: TasksWidget
@@ -49,6 +53,7 @@ targets:
         # The app's name, shown in the Mac menu bar and Finder. Identifiers keep the old "tasks".
         PRODUCT_NAME: Needs Doing
         PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks
+        APP_GROUP: group.com.andyaiken.tasks
         # iPhone only; no iPad. This must be set per target: supportedDestinations
         # writes TARGETED_DEVICE_FAMILY = "1,2" on the target, which beats settings.base.
         TARGETED_DEVICE_FAMILY: "1"
@@ -69,6 +74,14 @@ targets:
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         ENABLE_PREVIEWS: YES
         SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+      configs:
+        # Test builds install alongside the App Store app instead of over it, so they never
+        # take over its data or point it at the development iCloud environment. Archives
+        # use Release, so what ships is unaffected.
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks.dev
+          APP_GROUP: group.com.andyaiken.tasks.dev
+          INFOPLIST_KEY_CFBundleDisplayName: Needs Doing Dev
 
   # The To do widget, for the iPhone home and Lock Screens and the Mac desktop.
   TasksWidget:
@@ -83,12 +96,14 @@ targets:
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        AppGroup: $(APP_GROUP)
     dependencies:
       - package: TasksCore
     settings:
       base:
         PRODUCT_NAME: TasksWidget
         PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks.widget
+        APP_GROUP: group.com.andyaiken.tasks
         # Must match the app; see the note on the Tasks target.
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_ENTITLEMENTS: Config/Widget-iOS.entitlements
@@ -97,3 +112,9 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Needs Doing
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         SKIP_INSTALL: YES
+      configs:
+        # Matches the app's test identity; see the note there.
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.andyaiken.tasks.dev.widget
+          APP_GROUP: group.com.andyaiken.tasks.dev
+          INFOPLIST_KEY_CFBundleDisplayName: Needs Doing Dev

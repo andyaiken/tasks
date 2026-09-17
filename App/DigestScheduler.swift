@@ -50,7 +50,7 @@ final class DigestScheduler {
     /// The digests this device would send from `now` on.
     static func plan(for store: Store, minutes: Int, now: Date = .now) -> [ScheduledDigest] {
         let today = CalendarDay(containing: now, in: .current)
-        return Digest.upcoming(chores: store.chores, log: store.log, me: store.me, participants: [], from: today, days: daysAhead)
+        return Digest.upcoming(chores: store.chores, log: store.log, me: store.me, participants: store.members, from: today, days: daysAhead)
             .compactMap { upcoming in
                 guard let fire = Calendar.current.date(from: components(for: upcoming.day, minutes: minutes)),
                       fire > now

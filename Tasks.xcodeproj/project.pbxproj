@@ -14,10 +14,12 @@
 		218D7BEB809A6CFB231F2744 /* CloudRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46B21EC2475DD4CAD71B7C5 /* CloudRecords.swift */; };
 		2454FEF8D9796DD798626078 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF5ADC8C95D61A27FF1E907 /* DemoData.swift */; };
 		25726A5936AC2685F985BD5B /* TasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2AD40EC72FA56FD59C9EDDD4 /* TasksCore */; };
+		2C9DFF3FBFD56F77C69C2168 /* Invitations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18BFC9A5938C1474135ECD23 /* Invitations.swift */; };
 		3537D4789201D295E0208B73 /* BandColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3306F7D1266C467256FC421 /* BandColor.swift */; };
 		3E311880846E5F7EF6235660 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D410D62EF078F2101F0E39C /* SettingsView.swift */; };
 		45F492BFDED1E7B649842550 /* TasksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B89EFFC4229302A641762F9 /* TasksApp.swift */; };
 		4AA3085EF0001164CC96F13B /* AllTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BA7BFD37EEAC43F1313035 /* AllTasksView.swift */; };
+		4E73028AFFD584EFE9F902A6 /* SharingSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7AF6ADC47B6D1B352E328C0 /* SharingSection.swift */; };
 		5A02235F507735F59282E091 /* TaskCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7323263B8F872527C58EA62 /* TaskCommands.swift */; };
 		5C3584710408CEE257B99F8B /* CloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B3A688FFCA5965D022CE07 /* CloudSync.swift */; };
 		6F8A282656609F4552C3A3B6 /* TaskEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */; };
@@ -27,6 +29,7 @@
 		A3C1C105136C897DE2AF912A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B54AAFBE49912E2CF111018 /* Assets.xcassets */; };
 		AF565F3E865A4C5A8518AF79 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 39B12E07F00ADDA993472FB6 /* PrivacyInfo.xcprivacy */; };
 		B8042CB3D535C36248F0FD67 /* TasksWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9C83BC5C14087748159401 /* TasksWidget.swift */; };
+		BB6B1AE460A7662B62C694D2 /* SharingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A8BFC9BDD89C7D38DDB7EF /* SharingScreen.swift */; };
 		D29703CAF765DB0B7BEB8F5D /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357099C9D090CE92AE7522C7 /* Formatting.swift */; };
 		D84EC4E357CA6A3A824D4734 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96E7D23788DCA1BBF8C4469 /* ContentView.swift */; };
 		D9AE130BC020FC03EF2DDB5B /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF4E826F57CF05B19BCE91C4 /* SharedStore.swift */; };
@@ -61,6 +64,7 @@
 /* Begin PBXFileReference section */
 		11BA7BFD37EEAC43F1313035 /* AllTasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTasksView.swift; sourceTree = "<group>"; };
 		1675A369C3C45516380C695D /* TasksCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = TasksCore; path = TasksCore; sourceTree = SOURCE_ROOT; };
+		18BFC9A5938C1474135ECD23 /* Invitations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invitations.swift; sourceTree = "<group>"; };
 		1B54AAFBE49912E2CF111018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2400A296FE20171D3321C936 /* MainListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainListView.swift; sourceTree = "<group>"; };
 		33B3A688FFCA5965D022CE07 /* CloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSync.swift; sourceTree = "<group>"; };
@@ -72,7 +76,9 @@
 		6D410D62EF078F2101F0E39C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		716B8FC5E67468C806B0F7C5 /* NextTaskWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextTaskWidget.swift; sourceTree = "<group>"; };
 		752B15014C7E0FAC670C12B8 /* UndoBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoBanner.swift; sourceTree = "<group>"; };
+		77A8BFC9BDD89C7D38DDB7EF /* SharingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingScreen.swift; sourceTree = "<group>"; };
 		A46B21EC2475DD4CAD71B7C5 /* CloudRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudRecords.swift; sourceTree = "<group>"; };
+		A7AF6ADC47B6D1B352E328C0 /* SharingSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingSection.swift; sourceTree = "<group>"; };
 		A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditor.swift; sourceTree = "<group>"; };
 		B3306F7D1266C467256FC421 /* BandColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BandColor.swift; sourceTree = "<group>"; };
 		B7323263B8F872527C58EA62 /* TaskCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCommands.swift; sourceTree = "<group>"; };
@@ -116,6 +122,8 @@
 				2400A296FE20171D3321C936 /* MainListView.swift */,
 				39B12E07F00ADDA993472FB6 /* PrivacyInfo.xcprivacy */,
 				6D410D62EF078F2101F0E39C /* SettingsView.swift */,
+				77A8BFC9BDD89C7D38DDB7EF /* SharingScreen.swift */,
+				A7AF6ADC47B6D1B352E328C0 /* SharingSection.swift */,
 				FD570CDA704036C1A129D36C /* Store.swift */,
 				B7323263B8F872527C58EA62 /* TaskCommands.swift */,
 				A8C5C3FB1B8073446EB27BDD /* TaskEditor.swift */,
@@ -177,6 +185,7 @@
 			children = (
 				A46B21EC2475DD4CAD71B7C5 /* CloudRecords.swift */,
 				33B3A688FFCA5965D022CE07 /* CloudSync.swift */,
+				18BFC9A5938C1474135ECD23 /* Invitations.swift */,
 			);
 			path = Sync;
 			sourceTree = "<group>";
@@ -303,9 +312,12 @@
 				2454FEF8D9796DD798626078 /* DemoData.swift in Sources */,
 				97922634FC60054E5674CA68 /* DigestScheduler.swift in Sources */,
 				D29703CAF765DB0B7BEB8F5D /* Formatting.swift in Sources */,
+				2C9DFF3FBFD56F77C69C2168 /* Invitations.swift in Sources */,
 				1380DD9872885B4D29AF060C /* MainListView.swift in Sources */,
 				3E311880846E5F7EF6235660 /* SettingsView.swift in Sources */,
 				80F1B99FE1660B337A5C0D19 /* SharedStore.swift in Sources */,
+				BB6B1AE460A7662B62C694D2 /* SharingScreen.swift in Sources */,
+				4E73028AFFD584EFE9F902A6 /* SharingSection.swift in Sources */,
 				F7084F7AF2E52CECA8A61C1A /* Store.swift in Sources */,
 				5A02235F507735F59282E091 /* TaskCommands.swift in Sources */,
 				6F8A282656609F4552C3A3B6 /* TaskEditor.swift in Sources */,
@@ -328,6 +340,7 @@
 		939386187925AAEE29A4B9AD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_GROUP = group.com.andyaiken.tasks;
 				CODE_SIGN_ENTITLEMENTS = "Config/Widget-iOS.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Config/Widget-macOS.entitlements";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -354,6 +367,7 @@
 		99CDE9F15BBF91AEEB898C83 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_GROUP = group.com.andyaiken.tasks;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Config/Tasks-iOS.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Config/Tasks-macOS.entitlements";
@@ -388,6 +402,7 @@
 		9D13C2F90C46215B7DDB294A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_GROUP = group.com.andyaiken.tasks.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Config/Tasks-iOS.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Config/Tasks-macOS.entitlements";
@@ -396,7 +411,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Needs Doing";
+				INFOPLIST_KEY_CFBundleDisplayName = "Needs Doing Dev";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -407,7 +422,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.andyaiken.tasks;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andyaiken.tasks.dev;
 				PRODUCT_NAME = "Needs Doing";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -559,18 +574,19 @@
 		BE28052C766D71600CCCF1E2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_GROUP = group.com.andyaiken.tasks.dev;
 				CODE_SIGN_ENTITLEMENTS = "Config/Widget-iOS.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Config/Widget-macOS.entitlements";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/Widget-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Needs Doing";
+				INFOPLIST_KEY_CFBundleDisplayName = "Needs Doing Dev";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.andyaiken.tasks.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andyaiken.tasks.dev.widget;
 				PRODUCT_NAME = TasksWidget;
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;

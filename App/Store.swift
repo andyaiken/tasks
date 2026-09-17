@@ -12,6 +12,9 @@ final class Store {
     /// A local user ID (§3) until the list moves to iCloud, then the iCloud user record ID.
     private(set) var me: UserID
     private(set) var listID: UUID
+    /// Everyone in a shared list, including the user; empty for a list that isn't shared (§8).
+    private(set) var participants: [Participant]
+    private(set) var sharing: ListSharing
 
     /// Refreshed every minute and whenever the app comes to the front, so "today" rolls over at 04:00.
     var now = Date()
@@ -36,8 +39,39 @@ final class Store {
     var today: CalendarDay { CalendarDay(containing: now, in: .current) }
 
     var mainList: MainList {
-        // No sharing yet, so the list is always solo (§8).
-        MainList(chores: chores, log: log, today: today, me: me, participants: [])
+        MainList(chores: chores, log: log, today: today, me: me, participants: members)
+    }
+
+    /// Everyone who has accepted, the user included (§8).
+    var members: Set<UserID> { snapshot.members }
+
+    /// Nobody else has accepted, so assignment controls are hidden (§8).
+    var isSolo: Bool { mainList.isSolo }
+
+    /// People a task can be assigned to, the user first, then by label.
+    var assignableParticipants: [Participant] {
+        let labels = participantLabels
+        return participants.filter(\.isAssignable).sorted { a, b in
+            if (a.userID == me) != (b.userID == me) { return a.userID == me }
+            return (labels[a.id] ?? "").localizedStandardCompare(labels[b.id] ?? "") == .orderedAscending
+        }
+    }
+
+    /// Each participant's label, by participant ID (§8).
+    var participantLabels: [String: String] {
+        Participant.labels(for: participants)
+    }
+
+    /// The label for whoever has this user ID, or `nil` if they aren't in the list.
+    func label(for user: UserID) -> String? {
+        guard let participant = participants.first(where: { $0.userID == user }) else { return nil }
+        return participantLabels[participant.id]
+    }
+
+    /// The owner of a list the user has joined.
+    var listOwner: Participant? {
+        guard case .member = sharing else { return nil }
+        return participants.first(where: \.isOwner)
     }
 
     func chore(id: UUID) -> Chore? {
@@ -145,6 +179,25 @@ final class Store {
         persist()
     }
 
+    /// Updates who's in the list and whose it is, from its share (§7, §8).
+    func setSharing(_ sharing: ListSharing, participants: [Participant]) {
+        guard sharing != self.sharing || participants != self.participants else { return }
+        self.sharing = sharing
+        self.participants = participants
+        persist()
+    }
+
+    /// Swaps in a different list: one the user has joined, or their own list again after leaving (§7).
+    /// Its tasks arrive from iCloud afterwards; `keeping` are tasks and history brought along.
+    func switchList(to sharing: ListSharing, keeping chores: [Chore] = [], log: [LogEntry] = []) {
+        self.chores = chores
+        self.log = log
+        self.sharing = sharing
+        participants = []
+        undo = nil
+        persist()
+    }
+
     private func upsert(_ chore: Chore) {
         if let index = chores.firstIndex(where: { $0.id == chore.id }) {
             chores[index] = chore
@@ -165,7 +218,13 @@ final class Store {
         listID = snapshot.listID
         chores = snapshot.chores
         log = snapshot.log
+        participants = snapshot.participants
+        sharing = snapshot.sharing
         self.fileURL = fileURL
+    }
+
+    private var snapshot: StoreSnapshot {
+        StoreSnapshot(me: me, listID: listID, chores: chores, log: log, participants: participants, sharing: sharing)
     }
 
     #if DEBUG
@@ -217,7 +276,7 @@ final class Store {
 
     private func persist() {
         revision += 1
-        let snapshot = StoreSnapshot(me: me, listID: listID, chores: chores, log: log)
+        let snapshot = self.snapshot
         do {
             let url = fileURL
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)

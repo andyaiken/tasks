@@ -8,6 +8,8 @@ struct TasksApp: App {
     @State private var sync: CloudSync
     #if os(macOS)
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #else
+    @UIApplicationDelegateAdaptor(PhoneAppDelegate.self) private var appDelegate
     #endif
 
     init() {
@@ -19,8 +21,10 @@ struct TasksApp: App {
         let screenshots = false
         let store = Store.load()
         #endif
+        let sync = CloudSync(store: store, enabled: !screenshots)
         _store = State(initialValue: store)
-        _sync = State(initialValue: CloudSync(store: store, enabled: !screenshots))
+        _sync = State(initialValue: sync)
+        Invitations.shared.handle { sync.received($0) }
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
 
@@ -56,6 +60,11 @@ struct TasksApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
+    }
+
+    /// An invitation to someone's list (§7).
+    func application(_ application: NSApplication, userDidAcceptCloudKitShareWith metadata: CKShare.Metadata) {
+        Invitations.shared.deliver(metadata)
     }
 }
 #endif

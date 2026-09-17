@@ -66,7 +66,7 @@ struct Provider: TimelineProvider {
             log: snapshot.log,
             today: CalendarDay(containing: date, in: .current),
             me: snapshot.me,
-            participants: []
+            participants: snapshot.members
         )
         return DueEntry(date: date, items: list.yours + list.everyoneElse)
     }

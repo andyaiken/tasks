@@ -1,6 +1,13 @@
-# Shared Recurring Task List — Draft Spec v0.10
+# Shared Recurring Task List — Draft Spec v0.11
 
-## Changes since v0.9
+## Changes since v0.10
+
+- **Sharing built, not yet tested between two people (§7, §8, §11).** Share your list from Settings; accept an invitation; see who's in the list; assign tasks; leave a list. Tested so far: it builds, the domain tests pass, 1.0's saved sync state converts correctly, and the app runs. Nothing has been tried with a second Apple Account — that's the test session in §12.3.
+- **Decided: one list at a time (§7, §13).** Joining someone's list switches to it and leaves your own list untouched in iCloud, optionally copying your tasks and their history in. Leaving, or losing access, switches back to your own list.
+- **Decided: shared lists keep Yours / Everyone else's sections (§8, §13)**, with each row showing its band, and whose it is under Everyone else's.
+- **Test builds have their own identity (§11)**, so they install alongside the App Store app instead of taking over its data.
+
+## Changes in v0.10
 
 - **Scheduling fixes (§4, §5, §6).** A one-off due today, or already overdue when created, now shows up straight away. A fixed task's first occurrence now has a defined cycle start. Under *skip*, a late completion no longer counts for the next occurrence. A fixed task with several missed occurrences now shows as due, not overdue. Occurrences before a task was created are ignored. Urgency bands have exact boundaries.
 - **Calendar dates are stored as dates, not moments (§3, §4).** `anchorDate` and `createdOn` are stored as `YYYY-MM-DD`, and every log entry records its own `day`, set by the device that recorded it. This settles the household time-zone question (§12.2).
@@ -187,6 +194,15 @@ CloudKit shared record zones. No backend to write, host, or bring into GDPR scop
 
 **The owner is a single point of failure.** The shared zone lives in the owner's private database, and CloudKit cannot transfer ownership. If the owner stops sharing, deletes the app's data, or leaves iCloud, everyone else loses the list. Provide an export *and an import*: importing creates a new list owned by the importer, who can then share it. User record IDs are the same for everyone in the app's container, so an imported log keeps who did what. Say plainly in the UI who owns the list.
 
+**Joining and leaving — built, v0.11.** A person uses one list at a time (§13).
+
+- **Joining.** Opening an invitation asks "Join Sam's list?". Someone with tasks of their own chooses whether to bring them: the tasks and their history are copied into Sam's list. Either way they stay in the person's own list, which is left untouched in iCloud. Their other devices follow automatically, without asking again.
+- **Already in a list.** Joining another means leaving the current one; the prompt says so, and nothing is copied between two shared lists. Someone *sharing* their own list with others must stop sharing before joining another — otherwise the people in their list would be left in a list nobody's using.
+- **Leaving** (Settings → Sharing → Leave List) switches back to the person's own list, as it was.
+- **Losing access** — the owner stops sharing, removes them, or their list disappears — also switches back to their own list, with a notice saying so. They keep nothing from the shared list; the export and import above aren't built yet.
+- **Signing out of iCloud** while in someone else's list removes that list from the device (it isn't theirs, and it's still in iCloud); their own list returns when they sign in.
+- **Sharing** (Settings → Sharing → Share This List…) uses the system's invite screen, limited to named people with read-write access, so no public link can be made. Settings then lists everyone, marking the owner, "You", and anyone invited who hasn't joined. Manage Sharing… reopens the system screen to add or remove people, or stop sharing.
+
 **Your own devices.** The list lives in a custom zone (`List`) in your private iCloud database, so every iPhone and Mac signed into your Apple Account shows the same list. Changes sync through CKSyncEngine, which is told about other devices' changes by silent push.
 
 - **Merged automatically.** The first time a device syncs, it downloads what's already in iCloud and uploads whatever it has that iCloud doesn't. The log is a union, so nothing is lost; the same task added separately on two devices shows up twice, and one can be deleted. The first device to sync fixes the list's ID; later devices move their tasks onto it.
@@ -319,6 +335,19 @@ Keep the domain logic (scheduling, urgency, log interpretation, labels) free of 
 
 The local store is plain files: the data is small (tens of tasks, a few thousand log entries after years), so it's held in memory and saved as a whole. That keeps it easy to share with a widget through an app group and easy to export (§7). Minimum OS: iOS 18 and macOS 15 (CKSyncEngine needs 17/14; 18 gives the current Contacts limited-access APIs).
 
+**Sharing, as built (v0.11).** A *zone-wide* share (`CKShare(recordZoneID:)`) on the owner's `List` zone, so every record in it is shared and nothing needs a parent reference. The share is created when the owner first opens Share This List…, saved directly (not through the sync engine), and read back by both sides as an ordinary record in the zone, which is where the participant list comes from.
+
+- **Two sync engines**, one per database: the private database (the user's own list) and the shared database (a list they've joined). The list in use is the owner's zone if the user hasn't joined one, otherwise the joined zone (`List`, owned by the owner's user record name). Record IDs are built per zone; records from a zone not in use are ignored.
+- **Switching lists** gives the engine for the list being switched to a fresh start (no saved state), so it fetches everything, including changes it ignored while the user was away. Pending uploads for the list being left are dropped.
+- **Saved sync state** holds the user, whether their own list has merged, the joined list's owner, and each database's engine state, system fields and unconfirmed task edits. 1.0's single-database file is read into the private database's slot.
+- **Invitations** reach the app through the window scene on iPhone (the app sets its own scene delegate) and the app delegate on the Mac; `CKSharingSupported` is set in Info.plist. An invitation that arrives before iCloud has been checked waits for the check.
+- **Leaving** deletes the joined zone from the shared database, which is how a participant removes themselves.
+- **Only the owner writes the List record.** Participants read it for the list's ID.
+- **No schema change.** Shares are a system record type; no fields were added, so nothing needs deploying to production for sharing.
+- **Not built yet:** Contacts matching and pictures (§8), the participant directory (§8), export and import (§7), the privacy policy update (§12.5).
+
+**Test builds have their own identity.** Debug builds use bundle ID `com.andyaiken.tasks.dev` (widget `…dev.widget`), App Group `group.com.andyaiken.tasks.dev`, and the name "Needs Doing Dev", set in `project.yml`; the App Group reaches code and entitlements through the `APP_GROUP` build setting. They share the iCloud container, so they use its development environment. That way a test build installs alongside the App Store app on the same iPhone or Mac instead of replacing it — installing over the App Store app would take over its data and point it at the development environment. Archives use Release, which keeps the real identifiers.
+
 Constraints that leak into §3 regardless of route: records in the default zone cannot be shared — the list must live in a custom zone from day one. Retrofitting a zone later means migrating everyone's data.
 
 **Schema changes are asymmetric.** Fields can be added to a deployed production schema, but their types can't be changed. Deferring a field costs almost nothing; getting a type wrong is permanent. That's why calendar dates are strings (§3).
@@ -359,6 +388,20 @@ Sharing cannot be meaningfully tested with one Apple Account. Two accounts, two 
 
 **Prototype contact matching before anything else.** It needs three accounts: an owner and two participants, all invited by email or phone. On each participant's device, check what the share reveals about the other participant — name, email, phone. Two accounts can't show this, because the only other person a participant sees is the owner. If the answer is "nothing", §8's participant directory is the fallback.
 
+**Sharing test session — to do.** Needs a household member with their own Apple Account and iPhone (or Mac), present for the session. Use test builds ("Needs Doing Dev"), which install alongside the App Store app and use the development environment, so nobody's real list is touched; the household member's iPhone has to be registered to the developer account first, which Xcode does when it's connected by cable. Checks:
+
+1. **Invite.** Owner: Settings → Sharing → Share This List…, invite by the email or phone the other person uses for iCloud, send. Confirm there's no option for a public link.
+2. **Join.** Other person: open the invitation. The app opens and asks to join, offering to bring their tasks if they have any. After joining, they see the owner's tasks (and theirs, if brought).
+3. **People.** Both: Settings → Sharing lists both people, owner marked. **Record what each device shows for the other person** — name, and whether an email or phone is visible. This answers §8's open question and decides whether the participant directory is needed.
+4. **Sections.** Both: To do splits into Yours and Everyone else's.
+5. **Tick.** One person ticks a task; it goes from the other's list within about a minute. Its history says "Done by …".
+6. **Assign.** Owner assigns a task to the other person: it moves under their Yours, and into their digest (Settings → Coming up).
+7. **Edit at once.** Both edit different fields of the same task, one offline; both edits survive.
+8. **Second device.** If either person has another device on the same Apple Account with the test build, it switches to the shared list on its own.
+9. **Wrong account.** Open an invitation on a device signed into a different Apple Account: a clear message, no join.
+10. **Leave.** Other person leaves: they're back on their own list; the owner's Settings no longer lists them.
+11. **Stop sharing.** Re-invite, join, then the owner stops sharing: the other person is told, and is back on their own list.
+
 **Sync test, 11 September 2026 — passed.** iPhone and Mac on the same Apple Account, development environment. All nine checks passed: first-launch merge, add, tick, undo, delete, a tick made offline, the same task edited on both devices while one was offline (per-field merge kept both edits), a change arriving while the iPhone app was in the background, and catching up after the Mac app had been closed. Two failed at first, for the same reason: the app only fetched when iCloud's silent push arrived, and pushes were sometimes a minute late and aren't delivered to an app that isn't running. The fix is a backstop — the app also fetches on launch, whenever it comes to the front, and once a minute while open. After the fix, a Mac reopened after a change caught up 11 seconds after opening, down from about 80.
 
 ### 12.4 The digest's reliability
@@ -379,11 +422,10 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 
 ## 13. Open decisions
 
-- **What happens when a second list would appear** from someone else: accepting a household share while you already have your own tasks, or importing an export (§7). Records can't move between databases, so keeping one list means copying tasks and their logs. *Recommendation:* a person has exactly one list at a time. Whenever a second would appear, offer to copy the tasks (with their history) from the list being left into the one being kept, then remove the old one. (Your own devices merge automatically — decided, §7.)
 - **Getting back to completed one-offs.** Ticking a one-off completes it and it leaves every screen, so after the six-second Undo banner there's no way to find it and undo a mistaken tick. *Recommendation:* a "Recently done" section at the foot of All tasks listing the last couple of weeks' completed one-offs, each with Undo. (Found in the sync test, 11 September 2026.)
-- **Band headings on a shared list (§5, §8).** Solo lists group by band. Once there are Yours / Everyone else's sections, either band headings go inside each section, or bands become the sections and each row shows its assignee.
-- **Result of the contact-matching prototype (§12.3)** — decides whether the participant directory (§8) is needed.
-- **Subscriptions on the shared database (§9)** — confirm against current docs that only database subscriptions are supported.
+- **What a participant's device can see about the other participants (§8)** — check 3 in the sharing test session (§12.3). If names come through, labels work as built. If emails and phones don't, Contacts matching needs the participant directory. Two people can only show what a participant sees of the owner; a third account would show what they see of each other.
+- **Export and import (§7)** — the owner is still a single point of failure.
+- **Subscriptions on the shared database (§9)** — CKSyncEngine manages its own subscription for each database; confirm in the test session that changes arrive by push, not only by the minute-by-minute fetch.
 
 ### Decided
 
@@ -401,5 +443,6 @@ None of this is hard in the sense of requiring cleverness. It's hard in the sens
 - **Name:** Needs Doing, with the App Store subtitle "Chores that come round again". Checked against the App Store and a web search (no app or mark by that name; the nearest is an unrelated to-do app subtitled "What Needs Doing"). UK IPO trademark register searched 11 September 2026: clear. Still to do: reserving the name in App Store Connect. Identifiers (bundle ID `com.andyaiken.tasks`, iCloud container, App Group) keep the old working name; users never see them.
 - **Devices:** iPhone and Mac only; no iPad (§2). `TARGETED_DEVICE_FAMILY: "1"` must be set on *each target* in `project.yml`, not in the project-wide `settings.base`: XcodeGen's `supportedDestinations: [iOS, macOS]` writes `TARGETED_DEVICE_FAMILY = "1,2"` at target level, which overrides the base setting. The 1.0 (2) upload shipped with iPad support because of this, and App Store Connect then required 13-inch iPad screenshots; fixed in 1.0 (3). Check `UIDeviceFamily` in the built `Info.plist` after any change to the destinations.
 - **Your own devices:** one list in your iCloud, merged automatically when a device first syncs (§7).
-- **Main list grouping:** band headings on solo lists (§5).
+- **Main list grouping:** band headings on solo lists (§5). Shared lists keep Yours / Everyone else's sections, each row showing its band, and whose task it is (or "Anyone") under Everyone else's (§8). Decided v0.11.
+- **One list at a time (§7).** Joining switches to the shared list, leaves your own list untouched, and optionally copies your tasks and history in; leaving or losing access switches back. Decided v0.11, replacing the earlier recommendation to remove the list being left — keeping it costs nothing and makes leaving reversible.
 - **Persistence:** CKSyncEngine over plain local files; iOS 18 / macOS 15 minimum (§11).

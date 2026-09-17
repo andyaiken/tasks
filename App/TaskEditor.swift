@@ -19,6 +19,10 @@ struct TaskEditor: View {
     @State private var startDate: Date
     @State private var lastDone: Date
     @State private var backlog: BacklogPolicy
+    @State private var assignee: UserID?
+    /// What the picker started on. An assignee who has left shows as Anyone, but the task
+    /// keeps their ID unless the user picks someone else, so it returns if they rejoin (§8).
+    private let initialAssignee: UserID?
     @State private var confirmation: String?
 
     enum When: CaseIterable, Identifiable {
@@ -59,6 +63,8 @@ struct TaskEditor: View {
         _unit = State(initialValue: chore.interval?.unit ?? .weeks)
         _weekday = State(initialValue: chore.anchorDate.weekday)
         _backlog = State(initialValue: chore.backlogPolicy)
+        initialAssignee = chore.assigneeID
+        _assignee = State(initialValue: chore.assigneeID)
     }
 
     private var trimmedTitle: String {
@@ -91,6 +97,10 @@ struct TaskEditor: View {
                     } footer: {
                         Text("For most things, like bin day, a missed one is simply gone. Choose \"Each one must be done\" only when every occurrence is a real obligation.")
                     }
+                }
+
+                if !store.isSolo {
+                    whoSection
                 }
 
                 if !isNew {
@@ -173,6 +183,24 @@ struct TaskEditor: View {
         }
     }
 
+    // MARK: Who
+
+    private var whoSection: some View {
+        let people = store.assignableParticipants
+        let labels = store.participantLabels
+        let current = people.contains { $0.userID == assignee } ? assignee : nil
+        return Section {
+            Picker("Who", selection: Binding(get: { current }, set: { assignee = $0 })) {
+                Text("Anyone").tag(UserID?.none)
+                ForEach(people) { person in
+                    Text(person.userID == store.me ? "Me" : labels[person.id] ?? "User").tag(person.userID)
+                }
+            }
+        } footer: {
+            Text("Anyone can tick off any task. Choosing someone puts it at the top of their list.")
+        }
+    }
+
     // MARK: Existing tasks
 
     @ViewBuilder
@@ -199,7 +227,7 @@ struct TaskEditor: View {
             Section {
                 ForEach(entries) { entry in
                     HStack {
-                        Text(entry.kind.historyLabel)
+                        Text(historyLabel(for: entry))
                         Spacer()
                         Text(entry.day.formatted)
                             .foregroundStyle(.secondary)
@@ -217,6 +245,13 @@ struct TaskEditor: View {
                 Text("Swipe an entry to undo it.")
             }
         }
+    }
+
+    /// "Done", or "Done by Sam" in a shared list (§7: who did what is visible).
+    private func historyLabel(for entry: LogEntry) -> String {
+        guard !store.isSolo else { return entry.kind.historyLabel }
+        let who = entry.by == store.me ? "you" : store.label(for: entry.by) ?? "someone who has left"
+        return "\(entry.kind.historyLabel) by \(who)"
     }
 
     // MARK: Saving
@@ -237,6 +272,7 @@ struct TaskEditor: View {
         let today = store.today
         chore.title = trimmedTitle
         chore.notes = notes
+        if assignee != initialAssignee { chore.assigneeID = assignee }
         if isNew { chore.createdOn = today }
 
         switch when {
