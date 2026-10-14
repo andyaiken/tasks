@@ -17,9 +17,9 @@ struct ContentView: View {
                 NavigationStack { AllTasksView() }
             }
         }
-        .focusedSceneValue(\.newTask) {
+        .focusedSceneValue(\.newTask, NewTaskAction {
             menuEditor = EditorRequest(chore: store.newChore(), isNew: true)
-        }
+        })
         .sheet(item: $menuEditor) { TaskEditor(chore: $0.chore, isNew: $0.isNew) }
         .alert(invitationTitle, isPresented: showingInvitation, presenting: sync.invitation) { invitation in
             if invitation.blocked != nil {

@@ -456,9 +456,10 @@ final class CloudSync {
             allowedParticipantAccessOptions: .specifiedRecipientsOnly
         )
         if #available(iOS 26, macOS 26, *) {
-            options.allowsAccessRequests = false
             options.allowsParticipantsToInviteOthers = false
         }
+        // Access requests (asking to join from a link) are left alone: they need an extra
+        // entitlement the app doesn't have, so they're off, and even setting them off logs an error.
         return options
     }
 
@@ -475,9 +476,6 @@ final class CloudSync {
         let share = CKShare(recordZoneID: Self.ownZoneID)
         share[CKShare.SystemFieldKey.title] = "Needs Doing"
         share.publicPermission = .none
-        if #available(iOS 26, macOS 26, *) {
-            share.allowsAccessRequests = false
-        }
         let (results, _) = try await database.modifyRecords(saving: [share], deleting: [])
         switch results[shareID] {
         case .success(let saved as CKShare): return saved
